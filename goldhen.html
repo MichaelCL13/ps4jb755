@@ -156,7 +156,7 @@
   // Text output
   {
     let title = document.getElementById("title");
-    title.innerHTML = "Now jailbreaking with payload" + (jailbreak_payload.includes(",") ? "s" : "") + " \"" + jailbreak_payload + "\"";
+    title.innerHTML = "Inyectando Payload" + (jailbreak_payload.includes(",") ? "s" : "") + " \"" + jailbreak_payload + "\"";
 
     // Create log area (which is also used by function "debug_log" from script utils.js)
     var logArea = document.getElementById("log_area");
@@ -285,7 +285,7 @@
     }
     if (jailbreak_payload.includes("netcat.js")) {
       let netcatCount = (jailbreak_payload.match(/netcat\.js/g) || []).length;
-      debug_log("[+] Waiting for payload" + (netcatCount > 0 ? "s" : "") + " on port 9021");
+      debug_log("[+] Ejecución de carga útil" + (netcatCount > 0 ? "s" : "") + " en el puerto 9021");
     }
     history.pushState({}, "", "index.html");
     setTimeout(function() {
