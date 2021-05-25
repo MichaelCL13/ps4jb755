@@ -1,14 +1,14 @@
 function die(msg) {
   alert(msg);
+  if (logLevel > 1) {
+    localStorage.setItem("jailbreak_last_date", Date.now());
+    localStorage.setItem("jailbreak_stage", 0);
+  }
   undefinedFunction();
 }
 
 function debug_log(msg) {
-  let textNode = document.createTextNode(msg);
-  let node = document.createElement("p").appendChild(textNode);
-
-  document.body.appendChild(node);
-  document.body.appendChild(document.createElement("br"));
+  document.getElementById("log_area").innerHTML += msg + "<br>";
 }
 
 // The following functions are taken from https://github.com/saelo/jscpwn/:
@@ -23,39 +23,34 @@ function hex(b) {
 // Return the hexadecimal representation of the given byte array.
 function hexlify(bytes) {
   var res = [];
-  for (var i = 0; i < bytes.length; i++) {
+  for (var i = 0; i < bytes.length; i++)
     res.push(hex(bytes[i]));
-  }
 
   return res.join('');
 }
 
 // Return the binary data represented by the given hexdecimal string.
 function unhexlify(hexstr) {
-  if (hexstr.length % 2 == 1) {
+  if (hexstr.length % 2 == 1)
     throw new TypeError("Invalid hex string");
-  }
 
   var bytes = new Uint8Array(hexstr.length / 2);
-  for (var i = 0; i < hexstr.length; i += 2) {
+  for (var i = 0; i < hexstr.length; i += 2)
     bytes[i / 2] = parseInt(hexstr.substr(i, 2), 16);
-  }
 
   return bytes;
 }
 
 function hexdump(data) {
-  if (typeof data.BYTES_PER_ELEMENT !== 'undefined') {
+  if (typeof data.BYTES_PER_ELEMENT !== 'undefined')
     data = Array.from(data);
-  }
 
   var lines = [];
   for (var i = 0; i < data.length; i += 16) {
     var chunk = data.slice(i, i + 16);
     var parts = chunk.map(hex);
-    if (parts.length > 8) {
+    if (parts.length > 8)
       parts.splice(8, 0, ' ');
-    }
     lines.push("" + i.toString(16) + " : " + parts.join(' '));
     // lines.push(parts.join(' '));
   }
@@ -86,9 +81,8 @@ var Struct = (function () {
     },
 
     unpack: function (type, bytes) {
-      if (bytes.length !== type.BYTES_PER_ELEMENT) {
+      if (bytes.length !== type.BYTES_PER_ELEMENT)
         throw Error("Invalid bytearray");
-      }
 
       var view = type;        // See below
       byteView.set(bytes);
@@ -117,9 +111,8 @@ function f2i(num) {
 }
 
 function str2array(str, length, offset) {
-  if (offset === undefined) {
+  if (offset === undefined)
     offset = 0;
-  }
   var a = new Array(length);
   for (var i = 0; i < length; i++) {
     a[i] = str.charCodeAt(i + offset);

